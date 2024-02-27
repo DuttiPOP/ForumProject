@@ -1,6 +1,9 @@
 package main
 
 import "github.com/gin-gonic/gin"
+const (
+	config_path = "model/config.yaml"
+)
 
 func main() {
 
