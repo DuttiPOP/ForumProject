@@ -49,6 +49,20 @@ func (service *UserService) Create(user entity.User) (int, error) {
 	}
 	return id, err
 }
+
+func (service *UserService) Get(id string) (entity.User, error) {
+	_id, err := strconv.Atoi(id)
+	if err != nil || _id <= 0 {
+		return entity.User{}, ErrInvalidUserId
+	}
+	user, err := service.repository.Get(_id)
+	if err != nil {
+		return entity.User{}, err
+	}
+	return user, err
+
+}
+
 }
 
 func ValidateUserFields(user *entity.User) error {
