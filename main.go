@@ -26,7 +26,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
-	defer db.Close()
+
+	err = db.AutoMigrate(&entity.User{})
+	if err != nil {
+		log.Fatalf("Failed to auto migrate database: %v", err)
+	}
 
 	repository := repository.NewRepository(db)
 	service := service.NewService(*repository)
