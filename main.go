@@ -35,10 +35,8 @@ func main() {
 		var user entity.User
 		err := context.BindJSON(&user)
 		if err != nil {
-			if err != nil {
-				context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-				return
-			}
+			context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
 		}
 
 		userID, err := service.IUserService.Create(user)
