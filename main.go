@@ -2,6 +2,9 @@ package main
 
 import (
 	"ForumProject/model"
+	"ForumProject/model/entity"
+	"ForumProject/model/repository"
+	"ForumProject/model/service"
 	"github.com/gin-gonic/gin"
 	"gopkg.in/yaml.v3"
 	"log"
@@ -23,6 +26,9 @@ func main() {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 	defer db.Close()
+
+	repository := repository.NewRepository(db)
+	service := service.NewService(*repository)
 
 	router.POST("/register", func(context *gin.Context) {
 
