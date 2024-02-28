@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gopkg.in/yaml.v3"
 	"log"
+	"net/http"
 	"os"
 )
 
@@ -31,6 +32,21 @@ func main() {
 	service := service.NewService(*repository)
 
 	router.POST("/register", func(context *gin.Context) {
+		var user entity.User
+		err := context.BindJSON(&user)
+		if err != nil {
+			if err != nil {
+				context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
+		}
+
+		userID, err := service.IUserService.Create(user)
+		if err != nil {
+			context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		context.JSON(http.StatusOK, gin.H{"id": userID})
 
 	})
 
