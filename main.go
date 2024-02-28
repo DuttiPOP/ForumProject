@@ -16,8 +16,8 @@ func main() {
 
 	router := gin.Default()
 
-	var dbconfig *model.DatabaseConfig = loadConfig()
-	db, err := model.NewDataBase(*dbconfig)
+	var config *model.Config = loadConfig()
+	db, err := model.NewDataBase(&config.DBConfig)
 
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
@@ -38,16 +38,16 @@ func main() {
 
 }
 
-func loadConfig() *model.DatabaseConfig {
+func loadConfig() *model.Config {
 	yamlFile, err := os.ReadFile(config_path)
 	if err != nil {
 		log.Printf("yamlFile.Get err   #%v ", err)
 	}
-	var dbconfig model.DatabaseConfig
-	err = yaml.Unmarshal(yamlFile, dbconfig)
+	var config model.Config
+	err = yaml.Unmarshal(yamlFile, &config)
 	if err != nil {
 		log.Fatalf("Unmarshal: %v", err)
 	}
 
-	return &dbconfig
+	return &config
 }
