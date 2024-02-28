@@ -7,8 +7,8 @@ import (
 
 type IUserService interface {
 	Create(user entity.User) (int, error)
-	Get(id int) (user entity.User, err error)
-	Delete(id int) error
+	Get(id string) (user entity.User, err error)
+	Delete(id string) error
 }
 
 type Service struct {
