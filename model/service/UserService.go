@@ -63,6 +63,12 @@ func (service *UserService) Get(id string) (entity.User, error) {
 
 }
 
+func (service *UserService) Delete(id string) error {
+	_id, err := strconv.Atoi(id)
+	if err != nil || _id <= 0 {
+		return ErrInvalidUserId
+	}
+	return service.repository.Delete(_id)
 }
 
 func ValidateUserFields(user *entity.User) error {
