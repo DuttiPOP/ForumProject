@@ -70,7 +70,19 @@ func main() {
 	})
 
 	router.PATCH("/user/:id", func(context *gin.Context) {
+		var user entity.User
+		err := context.BindJSON(&user)
+		if err != nil {
+			context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
 
+		err = service.IUserService.Update(context.Params.ByName("id"), user)
+		if err != nil {
+			context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		context.JSON(http.StatusOK, "{}")
 	})
 
 	router.Run(":8080")
