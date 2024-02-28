@@ -7,13 +7,16 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 const (
-	minUsernameLen = 3
-	maxUsernameLen = 20
-	minPasswordLen = 6
-	maxPasswordLen = 100
+	minUsernameLen    = 3
+	maxUsernameLen    = 20
+	minPasswordLen    = 6
+	maxPasswordLen    = 100
+	emailDuplicate    = "uni_users_email"
+	usernameDuplicate = "uni_users_username"
 )
 
 var (
@@ -40,10 +43,10 @@ func (service *UserService) Create(user entity.User) (int, error) {
 	}
 	id, err := service.repository.Create(user)
 	if err != nil {
-		if err.Error() == "pq: duplicate key value violates unique constraint \"user_email\"" {
+		if strings.Contains(err.Error(), emailDuplicate) {
 			return 0, ErrEmailDuplicate
 		}
-		if err.Error() == "pq: duplicate key value violates unique constraint \"user_name\"" {
+		if strings.Contains(err.Error(), usernameDuplicate) {
 			return 0, ErrUsernameDuplicate
 		}
 	}
@@ -51,24 +54,23 @@ func (service *UserService) Create(user entity.User) (int, error) {
 }
 
 func (service *UserService) Get(id string) (entity.User, error) {
-	_id, err := strconv.Atoi(id)
-	if err != nil || _id <= 0 {
+	_id, err := strconv.ParseUint(id, 10, 32)
+	if err != nil || _id == 0 {
 		return entity.User{}, ErrInvalidUserId
 	}
-	user, err := service.repository.Get(_id)
+	user, err := service.repository.Get(uint(_id))
 	if err != nil {
 		return entity.User{}, err
 	}
-	return user, err
-
+	return user, nil
 }
 
 func (service *UserService) Delete(id string) error {
-	_id, err := strconv.Atoi(id)
+	_id, err := strconv.ParseUint(id, 10, 32)
 	if err != nil || _id <= 0 {
 		return ErrInvalidUserId
 	}
-	return service.repository.Delete(_id)
+	return service.repository.Delete(uint(_id))
 }
 
 func ValidateUserFields(user *entity.User) error {
