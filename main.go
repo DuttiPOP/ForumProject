@@ -59,7 +59,12 @@ func main() {
 	})
 
 	router.DELETE("/user/:id", func(context *gin.Context) {
-
+		err := service.IUserService.Delete(context.Params.ByName("id"))
+		if err != nil {
+			context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		context.JSON(http.StatusOK, "{}")
 	})
 
 	router.PATCH("/user/:id", func(context *gin.Context) {
