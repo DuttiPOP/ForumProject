@@ -9,6 +9,7 @@ type IUserService interface {
 	Create(user entity.User) (int, error)
 	Get(id string) (user entity.User, err error)
 	Delete(id string) error
+	Update(id string, user entity.User) error
 }
 
 type Service struct {

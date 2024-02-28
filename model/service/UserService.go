@@ -73,6 +73,14 @@ func (service *UserService) Delete(id string) error {
 	return service.repository.Delete(uint(_id))
 }
 
+func (service *UserService) Update(id string, user entity.User) error {
+	_id, err := strconv.ParseUint(id, 10, 32)
+	if err != nil || _id <= 0 {
+		return ErrInvalidUserId
+	}
+	return service.repository.Update(uint(_id), user)
+}
+
 func ValidateUserFields(user *entity.User) error {
 	if user.Email == "" {
 		return ErrEmailRequired
