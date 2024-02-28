@@ -35,7 +35,20 @@ func NewUserService(repository repository.IUserRepository) *UserService {
 }
 
 func (service *UserService) Create(user entity.User) (int, error) {
-	return service.repository.Create(user)
+	if err := ValidateUserFields(&user); err != nil {
+		return 0, err
+	}
+	id, err := service.repository.Create(user)
+	if err != nil {
+		if err.Error() == "pq: duplicate key value violates unique constraint \"user_email\"" {
+			return 0, ErrEmailDuplicate
+		}
+		if err.Error() == "pq: duplicate key value violates unique constraint \"user_name\"" {
+			return 0, ErrUsernameDuplicate
+		}
+	}
+	return id, err
+}
 }
 
 func ValidateUserFields(user *entity.User) error {
