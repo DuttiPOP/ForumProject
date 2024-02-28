@@ -2,7 +2,7 @@ package repository
 
 import (
 	"ForumProject/model/entity"
-	"github.com/jmoiron/sqlx"
+	"gorm.io/gorm"
 )
 
 const (
@@ -19,7 +19,7 @@ type Repository struct {
 	IUserRepository
 }
 
-func NewRepository(db *sqlx.DB) *Repository {
+func NewRepository(db *gorm.DB) *Repository {
 	return &Repository{
 		NewUserRepository(db),
 	}
