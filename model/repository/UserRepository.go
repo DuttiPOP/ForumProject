@@ -16,7 +16,7 @@ func NewUserRepository(db *sqlx.DB) *UserRepository {
 
 func (repository *UserRepository) Create(user entity.User) (int, error) {
 	var id int
-	query := fmt.Sprintf(`INSERT INTO %s (email, username, password) VALUES ($1, $2, $3)`, userTable)
+	query := fmt.Sprintf(`INSERT INTO %s (email, username, password) VALUES ($1, $2, $3) RETURNING id`, userTable)
 	row := repository.db.QueryRow(query, user.Email, user.Username, user.Password)
 	if err := row.Scan(&id); err != nil {
 		return 0, err
