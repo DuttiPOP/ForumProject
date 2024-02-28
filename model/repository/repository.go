@@ -11,8 +11,9 @@ const (
 
 type IUserRepository interface {
 	Create(user entity.User) (int, error)
-	Get(id int) (user entity.User, err error)
-	Delete(id int) error
+	Get(id uint) (user entity.User, err error)
+	Delete(id uint) error
+	Update(id uint, user entity.User) error
 }
 
 type Repository struct {

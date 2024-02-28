@@ -2,37 +2,39 @@ package repository
 
 import (
 	"ForumProject/model/entity"
-	"fmt"
-	"github.com/jmoiron/sqlx"
+	"gorm.io/gorm"
 )
 
 type UserRepository struct {
-	db *sqlx.DB
+	db *gorm.DB
 }
 
-func NewUserRepository(db *sqlx.DB) *UserRepository {
+func NewUserRepository(db *gorm.DB) *UserRepository {
 	return &UserRepository{db}
 }
 
 func (repository *UserRepository) Create(user entity.User) (int, error) {
-	var id int
-	query := fmt.Sprintf(`INSERT INTO %s (email, username, password) VALUES ($1, $2, $3) RETURNING id`, userTable)
-	row := repository.db.QueryRow(query, user.Email, user.Username, user.Password)
-	if err := row.Scan(&id); err != nil {
-		return 0, err
+	result := repository.db.Table(userTable).Create(&user)
+	if result.Error != nil {
+		return 0, result.Error
 	}
-	return id, nil
+	return int(user.ID), nil
 }
 
-func (repository *UserRepository) Get(id int) (entity.User, error) {
+func (repository *UserRepository) Get(id uint) (entity.User, error) {
 	var user entity.User
-	query := fmt.Sprintf(`SELECT * FROM %s WHERE id = $1`, userTable)
-	err := repository.db.Get(&user, query, id)
-	return user, err
+	result := repository.db.First(&user, id)
+	if result.Error != nil {
+		return entity.User{}, result.Error
+	}
+	return user, nil
 }
 
-func (repository *UserRepository) Delete(id int) error {
-	query := fmt.Sprintf(`DELETE FROM %s WHERE id = $1`, userTable)
-	_, err := repository.db.Exec(query, id)
-	return err
+func (repository *UserRepository) Delete(id uint) error {
+	result := repository.db.Delete(&entity.User{}, id)
+	return result.Error
+}
+
+func (repository *UserRepository) Update(id uint, user entity.User) error {
+	return repository.db.Model(&user).Where("id = ?", id).Updates(&user).Error
 }
