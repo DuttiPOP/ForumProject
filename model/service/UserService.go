@@ -1,12 +1,10 @@
 package service
 
 import (
+	"ForumProject/model/dto"
 	"ForumProject/model/entity"
 	"ForumProject/model/repository"
 	"errors"
-	"fmt"
-	"regexp"
-	"strconv"
 	"strings"
 )
 
@@ -20,10 +18,6 @@ const (
 )
 
 var (
-	ErrEmailRequired     = errors.New("field \"email\" is required")
-	ErrInvalidEmail      = errors.New("field \"email\" is invalid")
-	ErrUsernameRequired  = errors.New(fmt.Sprintf("field \"username\" is required and must be between %d and %d characters", minUsernameLen, maxUsernameLen))
-	ErrPasswordRequired  = errors.New(fmt.Sprintf("field \"password\" is required and must be between %d and %d characters", minPasswordLen, maxPasswordLen))
 	ErrEmailDuplicate    = errors.New("email is already taken")
 	ErrUsernameDuplicate = errors.New("username is already taken")
 	ErrInvalidUserId     = errors.New("invalid user id")
@@ -37,11 +31,12 @@ func NewUserService(repository repository.IUserRepository) *UserService {
 	return &UserService{repository: repository}
 }
 
-func (service *UserService) Create(user entity.User) (int, error) {
-	if err := ValidateUserFields(&user); err != nil {
+func (service *UserService) Create(input dto.SignUpInput) (int, error) {
+	user, err := entity.NewUser(input)
+	if err != nil {
 		return 0, err
 	}
-	id, err := service.repository.Create(user)
+	id, err := service.repository.Create(*user)
 	if err != nil {
 		if strings.Contains(err.Error(), emailDuplicate) {
 			return 0, ErrEmailDuplicate
@@ -53,51 +48,27 @@ func (service *UserService) Create(user entity.User) (int, error) {
 	return id, err
 }
 
-func (service *UserService) Get(id string) (entity.User, error) {
-	_id, err := strconv.ParseUint(id, 10, 32)
-	if err != nil || _id == 0 {
-		return entity.User{}, ErrInvalidUserId
-	}
-	user, err := service.repository.Get(uint(_id))
+func (service *UserService) Get(id uint) (entity.User, error) {
+	user, err := service.repository.Get(id)
 	if err != nil {
 		return entity.User{}, err
 	}
 	return user, nil
 }
 
-func (service *UserService) Delete(id string) error {
-	_id, err := strconv.ParseUint(id, 10, 32)
-	if err != nil || _id <= 0 {
-		return ErrInvalidUserId
-	}
-	return service.repository.Delete(uint(_id))
+func (service *UserService) Delete(id uint) error {
+	return service.repository.Delete(id)
 }
 
-func (service *UserService) Update(id string, user entity.User) error {
-	_id, err := strconv.ParseUint(id, 10, 32)
-	if err != nil || _id <= 0 {
-		return ErrInvalidUserId
+func (service *UserService) Update(id uint, input dto.UserUpdateDTO) error {
+	u, err := service.repository.Get(id)
+	if err != nil {
+		return err
 	}
-	return service.repository.Update(uint(_id), user)
-}
+	err = u.UpdateUser(input)
+	if err != nil {
+		return err
+	}
 
-func ValidateUserFields(user *entity.User) error {
-	if user.Email == "" {
-		return ErrEmailRequired
-	}
-	if !isValidEmail(user.Email) {
-		return ErrInvalidEmail
-	}
-	if len(user.Username) < minUsernameLen || len(user.Username) > maxUsernameLen {
-		return ErrUsernameRequired
-	}
-	if len(user.Password) < minPasswordLen || len(user.Password) > maxPasswordLen {
-		return ErrPasswordRequired
-	}
-	return nil
-}
-
-func isValidEmail(email string) bool {
-	re := regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`)
-	return re.MatchString(email)
+	return service.repository.Update(id, u)
 }
