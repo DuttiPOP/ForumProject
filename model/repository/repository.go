@@ -16,12 +16,30 @@ type IUserRepository interface {
 	Update(id uint, user entity.User) error
 }
 
+type IPostRepository interface {
+	Create(post entity.Post) (uint, error)
+	Get(id uint) (post entity.Post, err error)
+	Delete(id uint) error
+	Update(id uint, post entity.Post) error
+}
+
+type ICommentRepository interface {
+	Create(comment entity.Comment) (uint, error)
+	Get(id uint) (comment entity.Comment, err error)
+	Delete(id uint) error
+	Update(id uint, comment entity.Comment) error
+}
+
 type Repository struct {
 	IUserRepository
+	IPostRepository
+	ICommentRepository
 }
 
 func NewRepository(db *gorm.DB) *Repository {
 	return &Repository{
 		NewUserRepository(db),
+		NewPostRepository(db),
+		NewCommentRepository(db),
 	}
 }
