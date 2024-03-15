@@ -3,12 +3,11 @@ package main
 import (
 	"ForumProject/model"
 	"ForumProject/model/entity"
+	"ForumProject/model/handler"
 	"ForumProject/model/repository"
 	"ForumProject/model/service"
-	"github.com/gin-gonic/gin"
 	"gopkg.in/yaml.v3"
 	"log"
-	"net/http"
 	"os"
 )
 
@@ -18,8 +17,6 @@ const (
 
 func main() {
 
-	router := gin.Default()
-
 	var config *model.Config = loadConfig()
 	db, err := model.NewDataBase(&config.DBConfig)
 
@@ -27,65 +24,17 @@ func main() {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
-	err = db.AutoMigrate(&entity.User{})
+	err = db.AutoMigrate(&entity.User{}, &entity.Post{}, &entity.Comment{})
 	if err != nil {
 		log.Fatalf("Failed to auto migrate database: %v", err)
 	}
 
-	repository := repository.NewRepository(db)
-	service := service.NewService(*repository)
+	repositories := repository.NewRepository(db)
+	services := service.NewService(*repositories)
+	handlers := handler.NewHandler(services, db)
+	router := handlers.InitRoutes()
 
-	router.POST("/register", func(context *gin.Context) {
-		var user entity.User
-		err := context.BindJSON(&user)
-		if err != nil {
-			context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
-		userID, err := service.IUserService.Create(user)
-		if err != nil {
-			context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-		context.JSON(http.StatusOK, gin.H{"id": userID})
-
-	})
-	router.GET("/user/:id", func(context *gin.Context) {
-		user, err := service.IUserService.Get(context.Params.ByName("id"))
-		if err != nil {
-			context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-		context.JSON(http.StatusOK, user)
-	})
-
-	router.DELETE("/user/:id", func(context *gin.Context) {
-		err := service.IUserService.Delete(context.Params.ByName("id"))
-		if err != nil {
-			context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-		context.JSON(http.StatusOK, "{}")
-	})
-
-	router.PATCH("/user/:id", func(context *gin.Context) {
-		var user entity.User
-		err := context.BindJSON(&user)
-		if err != nil {
-			context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
-		err = service.IUserService.Update(context.Params.ByName("id"), user)
-		if err != nil {
-			context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-		context.JSON(http.StatusOK, "{}")
-	})
-
-	router.Run(":8080")
+	router.Run(":" + config.Port)
 }
 
 func loadConfig() *model.Config {
