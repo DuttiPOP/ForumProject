@@ -13,28 +13,36 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 	return &UserRepository{db}
 }
 
-func (repository *UserRepository) Create(user entity.User) (int, error) {
-	result := repository.db.Table(userTable).Create(&user)
+func (r *UserRepository) Create(user entity.User) (int, error) {
+	result := r.db.Create(&user)
 	if result.Error != nil {
 		return 0, result.Error
 	}
 	return int(user.ID), nil
 }
 
-func (repository *UserRepository) Get(id uint) (entity.User, error) {
+func (r *UserRepository) Get(id uint) (entity.User, error) {
 	var user entity.User
-	result := repository.db.First(&user, id)
+	result := r.db.Preload("Posts").First(&user, id)
 	if result.Error != nil {
 		return entity.User{}, result.Error
 	}
 	return user, nil
 }
 
-func (repository *UserRepository) Delete(id uint) error {
-	result := repository.db.Delete(&entity.User{}, id)
+func (r *UserRepository) Delete(id uint) error {
+	result := r.db.Delete(&entity.User{}, id)
 	return result.Error
 }
 
-func (repository *UserRepository) Update(id uint, user entity.User) error {
-	return repository.db.Model(&user).Where("id = ?", id).Updates(&user).Error
+func (r *UserRepository) Update(id uint, user entity.User) error {
+	return r.db.Model(&user).Where("id = ?", id).Updates(&user).Error
+}
+
+func (r *UserRepository) GetByEmail(email string) (user entity.User, err error) {
+	result := r.db.Where("email = ?", email).First(&user)
+	if result.Error != nil {
+		return entity.User{}, result.Error
+	}
+	return user, nil
 }

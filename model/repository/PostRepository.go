@@ -23,7 +23,10 @@ func (r *PostRepository) Create(post entity.Post) (uint, error) {
 }
 
 func (r *PostRepository) Get(id uint) (post entity.Post, err error) {
-	result := r.db.Preload("User").First(&post, id)
+	result := r.db.Preload("User").
+		Preload("Comments").
+		Preload("Comments.User").
+		First(&post, id)
 	return post, result.Error
 }
 
@@ -32,7 +35,7 @@ func (r *PostRepository) Delete(id uint) error {
 	return result.Error
 }
 
-func (r *PostRepository) Update(id uint, post entity.Post) error {
-	result := r.db.Model(&entity.Post{}).Where("id = ?", id).Updates(post)
+func (r *PostRepository) Update(post entity.Post) error {
+	result := r.db.Model(&entity.Post{}).Where("id = ? AND user_id = ?", post.ID, post.UserID).Updates(post)
 	return result.Error
 }

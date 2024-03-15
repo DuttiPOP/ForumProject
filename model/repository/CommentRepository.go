@@ -23,7 +23,7 @@ func (r *CommentRepository) Create(comment entity.Comment) (uint, error) {
 }
 
 func (r *CommentRepository) Get(id uint) (comment entity.Comment, err error) {
-	result := r.db.First(&comment, id)
+	result := r.db.Preload("User").First(&comment, id)
 	return comment, result.Error
 }
 

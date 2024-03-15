@@ -5,22 +5,19 @@ import (
 	"gorm.io/gorm"
 )
 
-const (
-	userTable = "users"
-)
-
 type IUserRepository interface {
 	Create(user entity.User) (int, error)
 	Get(id uint) (user entity.User, err error)
 	Delete(id uint) error
 	Update(id uint, user entity.User) error
+	GetByEmail(email string) (user entity.User, err error)
 }
 
 type IPostRepository interface {
 	Create(post entity.Post) (uint, error)
 	Get(id uint) (post entity.Post, err error)
 	Delete(id uint) error
-	Update(id uint, post entity.Post) error
+	Update(post entity.Post) error
 }
 
 type ICommentRepository interface {
