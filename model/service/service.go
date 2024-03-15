@@ -7,10 +7,14 @@ import (
 )
 
 type IUserService interface {
-	Create(user entity.User) (int, error)
-	Get(id string) (user entity.User, err error)
-	Delete(id string) error
-	Update(id string, user entity.User) error
+	Create(user dto.SignUpInput) (int, error)
+	Get(id uint) (user entity.User, err error)
+	Delete(id uint) error
+	Update(id uint, input dto.UserUpdate) error
+	GetAllPosts(id uint) ([]dto.PostOutput, error)
+	Authenticate(input dto.SignInInput) (int, error)
+}
+
 type IPostService interface {
 	Create(userID uint, input dto.PostInput) (uint, error)
 	Get(id uint) (dto.PostOutput, error)

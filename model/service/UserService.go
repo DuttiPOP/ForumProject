@@ -4,15 +4,13 @@ import (
 	"ForumProject/model/dto"
 	"ForumProject/model/entity"
 	"ForumProject/model/repository"
+	"ForumProject/model/utils"
 	"errors"
+	"golang.org/x/crypto/bcrypt"
 	"strings"
 )
 
 const (
-	minUsernameLen    = 3
-	maxUsernameLen    = 20
-	minPasswordLen    = 6
-	maxPasswordLen    = 100
 	emailDuplicate    = "uni_users_email"
 	usernameDuplicate = "uni_users_username"
 )
@@ -20,7 +18,6 @@ const (
 var (
 	ErrEmailDuplicate    = errors.New("email is already taken")
 	ErrUsernameDuplicate = errors.New("username is already taken")
-	ErrInvalidUserId     = errors.New("invalid user id")
 )
 
 type UserService struct {
@@ -31,12 +28,14 @@ func NewUserService(repository repository.IUserRepository) *UserService {
 	return &UserService{repository: repository}
 }
 
-func (service *UserService) Create(input dto.SignUpInput) (int, error) {
-	user, err := entity.NewUser(input)
+func (s *UserService) Create(input dto.SignUpInput) (int, error) {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return 0, err
 	}
-	id, err := service.repository.Create(*user)
+	input.Password = string(hashedPassword)
+	user := entity.NewUser(input)
+	id, err := s.repository.Create(*user)
 	if err != nil {
 		if strings.Contains(err.Error(), emailDuplicate) {
 			return 0, ErrEmailDuplicate
@@ -48,27 +47,43 @@ func (service *UserService) Create(input dto.SignUpInput) (int, error) {
 	return id, err
 }
 
-func (service *UserService) Get(id uint) (entity.User, error) {
-	user, err := service.repository.Get(id)
+func (s *UserService) Get(id uint) (entity.User, error) {
+	user, err := s.repository.Get(id)
 	if err != nil {
 		return entity.User{}, err
 	}
 	return user, nil
 }
 
-func (service *UserService) Delete(id uint) error {
-	return service.repository.Delete(id)
+func (s *UserService) Delete(id uint) error {
+	return s.repository.Delete(id)
 }
 
-func (service *UserService) Update(id uint, input dto.UserUpdateDTO) error {
-	u, err := service.repository.Get(id)
-	if err != nil {
-		return err
-	}
-	err = u.UpdateUser(input)
-	if err != nil {
-		return err
-	}
+func (s *UserService) Update(id uint, input dto.UserUpdate) error {
+	user := entity.UpdateUser(input)
+	err := s.repository.Update(id, *user)
+	return err
+}
 
-	return service.repository.Update(id, u)
+func (s *UserService) GetAllPosts(id uint) (posts []dto.PostOutput, err error) {
+	user, err := s.repository.Get(id)
+	if err != nil {
+		return nil, err
+	}
+	for _, post := range user.Posts {
+		posts = append(posts, utils.MapToPostDTO(post))
+	}
+	return posts, nil
+}
+
+func (s *UserService) Authenticate(input dto.SignInInput) (int, error) {
+	user, err := s.repository.GetByEmail(input.Email)
+	if err != nil {
+		return 0, err
+	}
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password))
+	if err != nil {
+		return 0, err
+	}
+	return int(user.ID), nil
 }
