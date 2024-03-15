@@ -1,6 +1,9 @@
 package entity
 
-import "gorm.io/gorm"
+import (
+	"ForumProject/model/dto"
+	"gorm.io/gorm"
+)
 
 type Comment struct {
 	gorm.Model
@@ -9,4 +12,11 @@ type Comment struct {
 	User    User   `gorm:"foreignkey:UserID"`
 	PostID  uint   `gorm:"not null" json:"post_id"`
 	Post    Post   `gorm:"foreignkey:PostID"`
+}
+
+func NewComment(input dto.CommentInput) *Comment {
+	return &Comment{
+		Content: input.Content,
+	}
+
 }

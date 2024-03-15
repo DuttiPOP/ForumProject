@@ -14,26 +14,24 @@ type User struct {
 	Comments []Comment `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
 
-func NewUser(input dto.SignUpInput) (*User, error) {
+func NewUser(input dto.SignUpInput) *User {
 	return &User{
 		Username: input.Username,
 		Email:    input.Email,
 		Password: input.Password,
-	}, nil
+	}
 }
 
-func (u *User) UpdateUser(input dto.UserUpdateDTO) error {
+func UpdateUser(input dto.UserUpdate) *User {
+	var user User
 	if input.Username != "" {
-		u.Username = input.Username
+		user.Username = input.Username
 	}
-
 	if input.Email != "" {
-		u.Email = input.Email
+		user.Email = input.Email
 	}
-
 	if input.Password != "" {
-		u.Password = input.Password
+		user.Password = input.Password
 	}
-
-	return nil
+	return &user
 }
