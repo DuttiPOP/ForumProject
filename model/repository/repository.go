@@ -6,22 +6,22 @@ import (
 )
 
 type IUserRepository interface {
-	Create(user entity.User) (int, error)
-	Get(id uint) (user entity.User, err error)
+	Create(user entity.User) (entity.User, error)
+	Get(id uint) (entity.User, error)
 	Delete(id uint) error
-	Update(id uint, user entity.User) error
-	GetByEmail(email string) (user entity.User, err error)
+	Update(user entity.User) error
+	GetByEmail(email string) (entity.User, error)
 }
 
 type IPostRepository interface {
-	Create(post entity.Post) (uint, error)
-	Get(id uint) (post entity.Post, err error)
+	Create(post entity.Post) (entity.Post, error)
+	Get(id uint) (entity.Post, error)
 	Delete(id uint) error
 	Update(post entity.Post) error
 }
 
 type ICommentRepository interface {
-	Create(comment entity.Comment) (uint, error)
+	Create(comment entity.Comment) (entity.Comment, error)
 	Get(id uint) (comment entity.Comment, err error)
 	Delete(id uint) error
 	Update(id uint, comment entity.Comment) error

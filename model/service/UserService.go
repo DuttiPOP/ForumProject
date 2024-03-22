@@ -28,40 +28,39 @@ func NewUserService(repository repository.IUserRepository) *UserService {
 	return &UserService{repository: repository}
 }
 
-func (s *UserService) Create(input dto.SignUpInput) (int, error) {
+func (s *UserService) Create(input dto.SignUpInput) (dto.UserOutput, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return 0, err
+		return dto.UserOutput{}, err
 	}
 	input.Password = string(hashedPassword)
-	user := entity.NewUser(input)
-	id, err := s.repository.Create(*user)
+	user, err := s.repository.Create(*entity.NewUser(input))
 	if err != nil {
 		if strings.Contains(err.Error(), emailDuplicate) {
-			return 0, ErrEmailDuplicate
+			return dto.UserOutput{}, ErrEmailDuplicate
 		}
 		if strings.Contains(err.Error(), usernameDuplicate) {
-			return 0, ErrUsernameDuplicate
+			return dto.UserOutput{}, ErrUsernameDuplicate
 		}
 	}
-	return id, err
+	return utils.MapToUserDTO(user), err
 }
 
-func (s *UserService) Get(id uint) (entity.User, error) {
+func (s *UserService) Get(id uint) (dto.UserOutput, error) {
 	user, err := s.repository.Get(id)
 	if err != nil {
-		return entity.User{}, err
+		return dto.UserOutput{}, err
 	}
-	return user, nil
+	return utils.MapToUserDTO(user), nil
 }
 
 func (s *UserService) Delete(id uint) error {
 	return s.repository.Delete(id)
 }
 
-func (s *UserService) Update(id uint, input dto.UserUpdate) error {
-	user := entity.UpdateUser(input)
-	err := s.repository.Update(id, *user)
+func (s *UserService) Update(userID uint, input dto.UserUpdate) error {
+	user := entity.UpdateUser(userID, input)
+	err := s.repository.Update(*user)
 	return err
 }
 

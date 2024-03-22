@@ -13,13 +13,12 @@ func NewCommentRepository(db *gorm.DB) *CommentRepository {
 	return &CommentRepository{db: db}
 }
 
-func (r *CommentRepository) Create(comment entity.Comment) (uint, error) {
+func (r *CommentRepository) Create(comment entity.Comment) (entity.Comment, error) {
 	result := r.db.Create(&comment)
 	if result.Error != nil {
-		return 0, result.Error
+		return entity.Comment{}, result.Error
 	}
-
-	return comment.ID, nil
+	return comment, nil
 }
 
 func (r *CommentRepository) Get(id uint) (comment entity.Comment, err error) {

@@ -30,12 +30,12 @@ func MapToUserDTO(user entity.User) dto.UserOutput {
 		ID:       user.ID,
 		Username: user.Username,
 	}
-	//if user.Posts != nil {
-	//	userDTO.posts := make([]post_dto.PostOutput, len(user.Posts))
-	//	for i, comment := range user.Posts {
-	//		posts[i] = MapToCommentDTO(comment)
-	//	}
-	//}
+	if user.Posts != nil {
+		userDTO.Posts = make([]dto.PostOutput, len(user.Posts))
+		for i, comment := range user.Posts {
+			userDTO.Posts[i] = MapToPostDTO(comment)
+		}
+	}
 	return userDTO
 
 }

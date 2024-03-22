@@ -4,6 +4,7 @@ import (
 	"ForumProject/model/dto"
 	"ForumProject/model/entity"
 	"ForumProject/model/repository"
+	"ForumProject/model/utils"
 )
 
 type CommentService struct {
@@ -14,13 +15,22 @@ func NewCommentService(repository repository.ICommentRepository) *CommentService
 	return &CommentService{repository: repository}
 }
 
-func (s *CommentService) Create(userID uint, postID uint, input dto.CommentInput) (uint, error) {
-	newComment := entity.NewComment(input)
-	newComment.PostID = postID
-	newComment.UserID = userID
-	id, err := s.repository.Create(*newComment)
+func (s *CommentService) Create(userID uint, postID uint, input dto.CommentInput) (dto.CommentOutput, error) {
+	comment, err := s.repository.Create(*entity.NewComment(userID, postID, input))
 	if err != nil {
-		return 0, err
+		return dto.CommentOutput{}, err
 	}
-	return id, nil
+	return utils.MapToCommentDTO(comment), nil
+}
+
+func (s *CommentService) Update(userID uint, commentID uint, updateDTO dto.CommentUpdate) error {
+	comment, err := s.repository.Get(commentID)
+	if err != nil {
+		return err
+	}
+	if comment.UserID != userID {
+		return entity.ErrNotOwner
+	}
+	comment.Update(updateDTO)
+	return s.repository.Update(commentID, comment)
 }

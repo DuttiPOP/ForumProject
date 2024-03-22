@@ -22,8 +22,9 @@ func NewUser(input dto.SignUpInput) *User {
 	}
 }
 
-func UpdateUser(input dto.UserUpdate) *User {
+func UpdateUser(userID uint, input dto.UserUpdate) *User {
 	var user User
+	user.ID = userID
 	if input.Username != "" {
 		user.Username = input.Username
 	}

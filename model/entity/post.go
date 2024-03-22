@@ -14,7 +14,7 @@ type Post struct {
 	Comments []Comment `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
 
-func NewPost(input dto.PostInput, userID uint) *Post {
+func NewPost(userID uint, input dto.PostInput) *Post {
 	return &Post{
 		Title:   input.Title,
 		Content: input.Content,
@@ -22,15 +22,11 @@ func NewPost(input dto.PostInput, userID uint) *Post {
 	}
 }
 
-func UpdatePost(updateDTO dto.PostUpdate, postID uint, userID uint) *Post {
-	var post Post
-	post.ID = postID
-	post.UserID = userID
+func (p *Post) Update(updateDTO dto.PostUpdate) {
 	if updateDTO.Title != "" {
-		post.Title = updateDTO.Title
+		p.Title = updateDTO.Title
 	}
 	if updateDTO.Content != "" {
-		post.Content = updateDTO.Content
+		p.Content = updateDTO.Content
 	}
-	return &post
 }

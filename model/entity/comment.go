@@ -14,9 +14,15 @@ type Comment struct {
 	Post    Post   `gorm:"foreignkey:PostID"`
 }
 
-func NewComment(input dto.CommentInput) *Comment {
+func NewComment(userID uint, postID uint, input dto.CommentInput) *Comment {
 	return &Comment{
+		UserID:  userID,
+		PostID:  postID,
 		Content: input.Content,
 	}
 
+}
+
+func (c *Comment) Update(input dto.CommentUpdate) {
+	c.Content = input.Content
 }

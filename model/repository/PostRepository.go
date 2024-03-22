@@ -13,13 +13,12 @@ func NewPostRepository(db *gorm.DB) *PostRepository {
 	return &PostRepository{db: db}
 }
 
-func (r *PostRepository) Create(post entity.Post) (uint, error) {
+func (r *PostRepository) Create(post entity.Post) (entity.Post, error) {
 	result := r.db.Create(&post)
 	if result.Error != nil {
-		return 0, result.Error
+		return entity.Post{}, result.Error
 	}
-
-	return post.ID, nil
+	return post, nil
 }
 
 func (r *PostRepository) Get(id uint) (post entity.Post, err error) {
@@ -36,6 +35,6 @@ func (r *PostRepository) Delete(id uint) error {
 }
 
 func (r *PostRepository) Update(post entity.Post) error {
-	result := r.db.Model(&entity.Post{}).Where("id = ? AND user_id = ?", post.ID, post.UserID).Updates(post)
+	result := r.db.Model(&entity.Post{}).Where("id = ?", post.ID).Updates(post)
 	return result.Error
 }

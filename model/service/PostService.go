@@ -15,13 +15,12 @@ func NewPostService(repository repository.IPostRepository) *PostService {
 	return &PostService{repository: repository}
 }
 
-func (s *PostService) Create(userID uint, input dto.PostInput) (uint, error) {
-	_post := entity.NewPost(input, userID)
-	post, err := s.repository.Create(*_post)
+func (s *PostService) Create(userID uint, input dto.PostInput) (dto.PostOutput, error) {
+	post, err := s.repository.Create(*entity.NewPost(userID, input))
 	if err != nil {
-		return 0, err
+		return dto.PostOutput{}, err
 	}
-	return post, nil
+	return utils.MapToPostDTO(post), nil
 }
 
 func (s *PostService) Get(id uint) (dto.PostOutput, error) {
@@ -33,11 +32,15 @@ func (s *PostService) Get(id uint) (dto.PostOutput, error) {
 }
 
 func (s *PostService) Update(userID uint, postID uint, updateDTO dto.PostUpdate) error {
-	err := s.repository.Update(*entity.UpdatePost(updateDTO, postID, userID))
+	post, err := s.repository.Get(postID)
 	if err != nil {
 		return err
 	}
-	return nil
+	if post.UserID != userID {
+		return entity.ErrNotOwner
+	}
+	post.Update(updateDTO)
+	return s.repository.Update(post)
 }
 
 func (s *PostService) GetCommentsByPostId(id uint) ([]dto.CommentOutput, error) {
