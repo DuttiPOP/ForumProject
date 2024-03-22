@@ -11,13 +11,11 @@ import (
 func (h *Handler) createPost(c *gin.Context) {
 	userID, err := h.GetUserID(c)
 	var input dto.PostInput
-	err = c.BindJSON(&input)
-	if err != nil {
+	if err = c.BindJSON(&input); err != nil {
 		h.sendErrorResponse(c, err.Error(), http.StatusBadRequest)
 		return
 	}
-	err = h.validate.Struct(input)
-	if err != nil {
+	if err = h.validate.Struct(input); err != nil {
 		h.sendErrorResponse(c, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -55,16 +53,14 @@ func (h *Handler) updatePost(c *gin.Context) {
 		return
 	}
 	var updateDTO dto.PostUpdate
-	err = c.BindJSON(&updateDTO)
-	if err != nil {
+	if err = c.BindJSON(&updateDTO); err != nil {
 		h.sendErrorResponse(c, err.Error(), http.StatusBadRequest)
 		return
 	}
-	err = h.services.IPostService.Update(userID, postID, updateDTO)
-	if err != nil {
-		h.sendErrorResponse(c, err.Error(), http.StatusInternalServerError)
+	if err = h.services.IPostService.Update(userID, postID, updateDTO); err != nil {
+		h.sendErrorResponse(c, err.Error(), http.StatusBadRequest)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Post updated successfully"})
+	c.JSON(http.StatusOK, http.NoBody)
 
 }

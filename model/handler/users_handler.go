@@ -8,12 +8,12 @@ import (
 )
 
 func (h *Handler) getUserById(c *gin.Context) {
-	id, err := utils.StrToUInt(c.Params.ByName(constants.AnotherUserIDKey))
+	userID, err := utils.StrToUInt(c.Params.ByName(constants.UserIDKey))
 	if err != nil {
 		h.sendErrorResponse(c, err.Error(), http.StatusBadRequest)
 		return
 	}
-	user, err := h.services.IUserService.Get(id)
+	user, err := h.services.IUserService.Get(userID)
 	if err != nil {
 		h.sendErrorResponse(c, err.Error(), http.StatusBadRequest)
 		return
@@ -22,7 +22,7 @@ func (h *Handler) getUserById(c *gin.Context) {
 }
 
 func (h *Handler) getUserPosts(c *gin.Context) {
-	userID, err := utils.StrToUInt(c.Params.ByName("user_id"))
+	userID, err := utils.StrToUInt(c.Params.ByName(constants.UserIDKey))
 	if err != nil {
 		h.sendErrorResponse(c, err.Error(), http.StatusBadRequest)
 		return

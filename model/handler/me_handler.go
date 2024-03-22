@@ -32,6 +32,7 @@ func (h *Handler) getMyPosts(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, posts)
 }
+
 func (h *Handler) updateMyProfile(c *gin.Context) {
 	userID, err := h.GetUserID(c)
 	if err != nil {
@@ -39,15 +40,13 @@ func (h *Handler) updateMyProfile(c *gin.Context) {
 		return
 	}
 	var updateDTO dto.UserUpdate
-	err = c.BindJSON(&updateDTO)
-	if err != nil {
+	if err = c.BindJSON(&updateDTO); err != nil {
 		h.sendErrorResponse(c, err.Error(), http.StatusBadRequest)
 		return
 	}
-	err = h.services.IUserService.Update(userID, updateDTO)
-	if err != nil {
+	if err = h.services.IUserService.Update(userID, updateDTO); err != nil {
 		h.sendErrorResponse(c, err.Error(), http.StatusBadRequest)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "User updated successfully"})
+	c.JSON(http.StatusOK, http.NoBody)
 }

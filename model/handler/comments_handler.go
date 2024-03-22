@@ -9,7 +9,7 @@ import (
 )
 
 func (h *Handler) getCommentsByPostId(c *gin.Context) {
-	postID, err := utils.StrToUInt(c.Params.ByName("post_id"))
+	postID, err := utils.StrToUInt(c.Params.ByName(constants.PostIDKey))
 	if err != nil {
 		h.sendErrorResponse(c, err.Error(), http.StatusBadRequest)
 		return
@@ -34,24 +34,47 @@ func (h *Handler) createComment(c *gin.Context) {
 		return
 	}
 	var input dto.CommentInput
-	err = c.BindJSON(&input)
-	if err != nil {
+	if err = c.BindJSON(&input); err != nil {
 		h.sendErrorResponse(c, err.Error(), http.StatusBadRequest)
 		return
 	}
-	err = h.validate.Struct(input)
-	if err != nil {
+	if err = h.validate.Struct(input); err != nil {
 		h.sendErrorResponse(c, err.Error(), http.StatusBadRequest)
 		return
 	}
-	commentID, err := h.services.ICommentService.Create(userID, postID, input)
+	comment, err := h.services.ICommentService.Create(userID, postID, input)
 	if err != nil {
 		h.sendErrorResponse(c, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	c.JSON(http.StatusOK, commentID)
+	c.JSON(http.StatusOK, comment)
 }
 
 func (h *Handler) updateComment(c *gin.Context) {
+	userID, err := h.GetUserID(c)
+	if err != nil {
+		h.sendErrorResponse(c, err.Error(), http.StatusBadRequest)
+		return
+	}
+	commentID, err := utils.StrToUInt(c.Params.ByName(constants.CommentIDKey))
+	if err != nil {
+		h.sendErrorResponse(c, err.Error(), http.StatusBadRequest)
+		return
+	}
+	var updateDTO dto.CommentUpdate
+	if err = c.BindJSON(&updateDTO); err != nil {
+		h.sendErrorResponse(c, err.Error(), http.StatusBadRequest)
+		return
+	}
 
+	if err = h.validate.Struct(updateDTO); err != nil {
+		h.sendErrorResponse(c, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if err = h.services.ICommentService.Update(userID, commentID, updateDTO); err != nil {
+		h.sendErrorResponse(c, err.Error(), http.StatusBadRequest)
+		return
+	}
+	c.JSON(http.StatusOK, http.NoBody)
 }

@@ -53,8 +53,8 @@ func (h *Handler) InitRoutes() *gin.Engine {
 
 	user := api.Group("/user")
 	{
-		user.GET("/:"+constants.AnotherUserIDKey, h.getUserById)
-		post := user.Group("/:" + constants.AnotherUserIDKey + "/post")
+		user.GET("/:"+constants.UserIDKey, h.getUserById)
+		post := user.Group("/:" + constants.UserIDKey + "/post")
 		{
 			post.GET("/all", h.getUserPosts)
 		}
